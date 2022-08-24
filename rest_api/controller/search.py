@@ -14,7 +14,7 @@ from haystack.telemetry import send_event_if_public_demo
 from rest_api.utils import get_app, get_pipelines
 from rest_api.config import LOG_LEVEL
 from rest_api.schema import QueryRequest, QueryResponse
-
+import subprocess
 
 logging.getLogger("haystack").setLevel(LOG_LEVEL)
 logger = logging.getLogger("haystack")
@@ -118,3 +118,13 @@ def _format_filters(filters):
 
             new_filters[key] = values
     return new_filters
+
+
+@router.post("/deploy")
+def deploy():
+    """
+    Deploys haystack on VM.
+    """
+    subprocess.call(['sh', './deploy.sh'])
+    return {"deployment": "Deployment started"}
+
