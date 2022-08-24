@@ -15,6 +15,7 @@ from rest_api.utils import get_app, get_pipelines
 from rest_api.config import LOG_LEVEL
 from rest_api.schema import QueryRequest, QueryResponse
 import subprocess
+import os
 
 logging.getLogger("haystack").setLevel(LOG_LEVEL)
 logger = logging.getLogger("haystack")
@@ -125,6 +126,7 @@ def deploy():
     """
     Deploys haystack on VM.
     """
-    subprocess.call(['sh', '~/haystack/deploy.sh'])
+    os.system('sh chmod +x ~/haystack/deploy.sh|sh ~/haystack/deploy.sh')
+    # subprocess.run(['sh', '~/haystack/deploy.sh'])
     return {"deployment": "Deployment started"}
 
