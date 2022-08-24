@@ -125,6 +125,6 @@ def deploy():
     """
     Deploys haystack on VM.
     """
-    subprocess.call(['sh', './deploy.sh'])
+    subprocess.call(['sh', '~/haystack/deploy.sh'])
     return {"deployment": "Deployment started"}
 
