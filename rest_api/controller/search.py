@@ -126,7 +126,7 @@ def deploy():
     """
     Deploys haystack on VM.
     """
-    os.system('sh /home/user/haystack/deploy.sh')
+    os.system('sh ~/ai/charlie/src/haystack/pipeline/deploy.sh')
     # subprocess.run(['sh', '~/haystack/deploy.sh'])
     return {"deployment": "Deployment started"}
 
