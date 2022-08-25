@@ -18,7 +18,7 @@ services:
     volumes:
       - ~/ai/charlie/src/haystack/pipeline:/home/user/rest_api/pipeline
     ports:
-      - 8000:8000
+      - 80:8000
     restart: on-failure
     environment:
       # See rest_api/pipeline/pipelines.haystack-pipeline.yml for configurations of Search & Indexing Pipeline.
