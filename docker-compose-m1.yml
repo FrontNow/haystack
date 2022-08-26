@@ -3,13 +3,13 @@ services:
   haystack-api:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: "deepset/haystack-m1:latest"
+      dockerfile: Dockerfile-m1
+    image: "deepset/haystack-cpu:latest"
     # Mount custom Pipeline YAML and custom Components.
     volumes:
-      - /Users/danielwiebking/Documents/GitHub/ai/charlie/src/haystack/pipeline:/home/user/rest_api/pipeline
+      - ~/Documents/GitHub/ai/charlie/src/haystack/pipeline:/home/user/rest_api/pipeline
     ports:
-      - 80:8000
+      - 8000:8000
     restart: on-failure
     environment:
       # See rest_api/pipeline/pipelines.haystack-pipeline.yml for configurations of Search & Indexing Pipeline.
@@ -35,7 +35,7 @@ services:
   ui:
     build:
       context: ui
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-m1
     image: "deepset/haystack-streamlit-ui:latest"
     ports:
       - 8501:8501
