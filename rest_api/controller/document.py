@@ -34,7 +34,9 @@ def get_documents(filters: FilterRequest):
     To get all documents you should provide an empty dict, like:
     `'{"filters": {}}'`
     """
-    docs = [doc.to_dict() for doc in document_store.get_all_documents(filters=filters.filters)]
+    docs = []
+    for doc_store in document_stores:
+        docs.extend([doc.to_dict() for doc in doc_store.get_all_documents(filters=filters.filters)])
     for doc in docs:
         doc["embedding"] = None
     return docs
@@ -55,5 +57,5 @@ def delete_documents(filters: FilterRequest):
     """
     for doc_store in document_stores:
         doc_store.delete_documents(filters=filters.filters)
-        logger.info("Deleted store")
+        logger.warning(f"Deleted store {doc_store.index}")
     return True
