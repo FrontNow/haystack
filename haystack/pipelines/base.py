@@ -750,18 +750,23 @@ class Pipeline:
         corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")  # or split = "train" or "dev"
 
         # check index before eval
-        document_store = index_pipeline.get_document_store()
-        if document_store is not None:
-            if document_store.get_document_count() > 0:
-                raise HaystackError(f"Index '{document_store.index}' is not empty. Please provide an empty index.")
+        document_stores = index_pipeline.get_document_stores()
+        for document_store in document_stores:
+            if document_store is not None:
+                if document_store.get_document_count() > 0:
+                    raise HaystackError(f"Index '{document_store.index}' is not empty. Please provide an empty index.")
 
-            if hasattr(document_store, "search_fields"):
-                search_fields = getattr(document_store, "search_fields")
-                if "name" not in search_fields:
-                    logger.warning(
-                        "Field 'name' is not part of your DocumentStore's search_fields. Titles won't be searchable. "
-                        "Please set search_fields appropriately."
-                    )
+                if hasattr(document_store, "search_fields"):
+                    search_fields = getattr(document_store, "search_fields")
+                    if "name" not in search_fields:
+                        logger.warning(
+                            "Field 'name' is not part of your DocumentStore's search_fields. Titles won't be searchable. "
+                            "Please set search_fields appropriately."
+                        )
+            # Clean up document store
+            if not keep_index and document_store is not None and document_store.index is not None:
+                logger.info(f"Cleaning up: deleting index '{document_store.index}'...")
+                document_store.delete_index(document_store.index)
 
         haystack_retriever = _HaystackBeirRetrieverAdapter(
             index_pipeline=index_pipeline,
@@ -773,11 +778,6 @@ class Pipeline:
 
         # Retrieve results (format of results is identical to qrels)
         results = retriever.retrieve(corpus, queries)
-
-        # Clean up document store
-        if not keep_index and document_store is not None and document_store.index is not None:
-            logger.info(f"Cleaning up: deleting index '{document_store.index}'...")
-            document_store.delete_index(document_store.index)
 
         # Evaluate your retrieval using NDCG@k, MAP@K ...
         logger.info(f"Retriever evaluation for k in: {retriever.k_values}")
@@ -974,21 +974,27 @@ class Pipeline:
             )
 
             # check index before eval
-            document_store = index_pipeline.get_document_store()
-            if document_store is None:
-                raise HaystackError(f"Document store not found. Please provide pipelines with proper document store.")
-            document_count = document_store.get_document_count()
-
-            if document_count > 0:
-                if not reuse_index:
-                    raise HaystackError(f"Index '{document_store.index}' is not empty. Please provide an empty index.")
-            else:
-                logger.info(f"indexing {len(corpus_file_paths)} documents...")
-                index_pipeline.run(file_paths=corpus_file_paths, meta=corpus_file_metas, params=index_params)
+            document_stores = index_pipeline.get_document_stores()
+            for document_store in document_stores:
+                if document_store is None:
+                    raise HaystackError(f"Document store not found. Please provide pipelines with proper document store.")
                 document_count = document_store.get_document_count()
-                logger.info(f"indexing {len(evaluation_set_labels)} files to {document_count} documents finished.")
 
-            tracker.track_params({"pipeline_index_document_count": document_count})
+                if document_count > 0:
+                    if not reuse_index:
+                        raise HaystackError(f"Index '{document_store.index}' is not empty. Please provide an empty index.")
+                else:
+                    logger.info(f"indexing {len(corpus_file_paths)} documents...")
+                    index_pipeline.run(file_paths=corpus_file_paths, meta=corpus_file_metas, params=index_params)
+                    document_count = document_store.get_document_count()
+                    logger.info(f"indexing {len(evaluation_set_labels)} files to {document_count} documents finished.")
+
+                tracker.track_params({"pipeline_index_document_count": document_count})
+
+                    # Clean up document store
+                if not reuse_index and document_store.index is not None:
+                    logger.info(f"Cleaning up: deleting index '{document_store.index}'...")
+                    document_store.delete_index(document_store.index)
 
             eval_result = query_pipeline.eval(
                 labels=evaluation_set_labels,
@@ -1037,11 +1043,6 @@ class Pipeline:
                     config = {"version": index_config["version"], "components": components, "pipelines": pipelines}
                     yaml.dump(config, outfile, default_flow_style=False)
                 tracker.track_artifacts(temp_dir)
-
-            # Clean up document store
-            if not reuse_index and document_store.index is not None:
-                logger.info(f"Cleaning up: deleting index '{document_store.index}'...")
-                document_store.delete_index(document_store.index)
 
         finally:
             tracker.end_run()
@@ -1571,7 +1572,7 @@ class Pipeline:
         ]
         return matches
 
-    def get_document_store(self) -> Optional[BaseDocumentStore]:
+    def get_document_stores(self) -> Optional[list[BaseDocumentStore]]:
         """
         Return the document store object used in the current pipeline.
 
@@ -1584,11 +1585,12 @@ class Pipeline:
             )
 
         if len(matches) > 1:
-            raise Exception(f"Multiple Document Stores found in Pipeline: {matches}")
+            # raise Exception(f"Multiple Document Stores found in Pipeline: {matches}")
+            return matches
         if len(matches) == 0:
             return None
         else:
-            return matches[0]
+            return matches
 
     def draw(self, path: Path = Path("pipeline.png")):
         """
