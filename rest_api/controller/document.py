@@ -18,7 +18,7 @@ logger = logging.getLogger("haystack")
 router = APIRouter()
 app: FastAPI = get_app()
 document_store: BaseDocumentStore = get_pipelines().get("document_store", None)
-document_stores: list(BaseDocumentStore) = get_pipelines().get("document_stores", None)
+document_stores: List[BaseDocumentStore] = get_pipelines().get("document_stores", None)
 
 
 @router.post("/documents/get_by_filters", response_model=List[Document], response_model_exclude_none=True)
