@@ -1572,7 +1572,7 @@ class Pipeline:
         ]
         return matches
 
-    def get_document_stores(self) -> Optional[list[BaseDocumentStore]]:
+    def get_document_stores(self) -> Optional[List[BaseDocumentStore]]:
         """
         Return the document store object used in the current pipeline.
 
@@ -1591,6 +1591,29 @@ class Pipeline:
             return None
         else:
             return matches
+
+    def get_document_store(self) -> Optional[BaseDocumentStore]:
+        """
+        Return the document store object used in the current pipeline.
+
+        :return: Instance of DocumentStore or None
+        """
+        matches = self.get_nodes_by_class(class_type=BaseDocumentStore)
+        if len(matches) == 0:
+            matches = list(
+                set(retriever.document_store for retriever in self.get_nodes_by_class(class_type=BaseRetriever))
+            )
+
+        if len(matches) > 1:
+            # raise Exception(f"Multiple Document Stores found in Pipeline: {matches}")
+            for document_store in matches:
+                if document_store.index == 'search-document':
+                    return document_store
+            return None
+        if len(matches) == 0:
+            return None
+        else:
+            return matches[0]
 
     def draw(self, path: Path = Path("pipeline.png")):
         """
