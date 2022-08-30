@@ -53,6 +53,7 @@ def delete_documents(filters: FilterRequest):
     To get all documents you should provide an empty dict, like:
     `'{"filters": {}}'`
     """
-    for document_store in document_stores:
-        document_store.delete_documents(filters=filters.filters)
+    for doc_store in document_stores:
+        doc_store.delete_documents(filters=filters.filters)
+        logger.info("Deleted store")
     return True
