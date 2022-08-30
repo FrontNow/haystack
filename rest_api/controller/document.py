@@ -34,6 +34,7 @@ def get_documents(filters: FilterRequest):
     To get all documents you should provide an empty dict, like:
     `'{"filters": {}}'`
     """
+    logger.warning("Getting documents")
     docs = []
     for doc_store in document_stores:
         docs.extend([doc.to_dict() for doc in doc_store.get_all_documents(filters=filters.filters)])
