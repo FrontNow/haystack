@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-GPU
-    # image: "deepset/haystack-gpu:latest"
+      image: "deepset/haystack-gpu:latest"
     # in recent docker-compose version you can enable GPU resources. Make sure to fulfill the prerequisites listed here: https://docs.docker.com/compose/gpu-support/
     deploy:
       resources:
