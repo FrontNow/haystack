@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: "deepset/haystack-cpu:latest"
+    # image: "deepset/haystack-cpu:latest"
     # Mount custom Pipeline YAML and custom Components.
     volumes:
       - ~/workspace/fn/ai/charlie/src/haystack/pipeline:/home/user/rest_api/pipeline
