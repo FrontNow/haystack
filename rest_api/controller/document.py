@@ -18,6 +18,7 @@ logger = logging.getLogger("haystack")
 router = APIRouter()
 app: FastAPI = get_app()
 document_store: BaseDocumentStore = get_pipelines().get("document_store", None)
+document_stores: list(BaseDocumentStore) = get_pipelines().get("document_stores", None)
 
 
 @router.post("/documents/get_by_filters", response_model=List[Document], response_model_exclude_none=True)
@@ -52,5 +53,6 @@ def delete_documents(filters: FilterRequest):
     To get all documents you should provide an empty dict, like:
     `'{"filters": {}}'`
     """
-    document_store.delete_documents(filters=filters.filters)
+    for document_store in document_stores:
+        document_store.delete_documents(filters=filters.filters)
     return True
