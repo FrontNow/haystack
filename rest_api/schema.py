@@ -59,5 +59,5 @@ class QueryResponse(BaseModel):
     answers: List[Answer] = []
     documents: List[Document] = []
     ####################### CUSTOM #########################################
-    generated_questions: List[Document] = []
+    generated_questions: List = []
     debug: Optional[Dict] = Field(None, alias="_debug")
