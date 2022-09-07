@@ -7,6 +7,7 @@ PIPELINE_YAML_PATH = os.getenv(
 )
 QUERY_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "query")
 INDEXING_PIPELINE_NAME = os.getenv("INDEXING_PIPELINE_NAME", "indexing")
+CRAWLING_PIPELINE_NAME = os.getenv("CRAWLING_PIPELINE_NAME", "crawling")
 
 FILE_UPLOAD_PATH = os.getenv("FILE_UPLOAD_PATH", str((Path(__file__).parent / "file-upload").absolute()))
 
