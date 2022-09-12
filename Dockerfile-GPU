@@ -25,7 +25,8 @@ RUN apt-get update && apt-get install -y software-properties-common && \
         wget && \
     rm -rf /var/lib/apt/lists/*
 
-
+# install psycopg2 dependencies
+RUN sudo apt-get install libpq5=12.9-0ubuntu0.20.04.1 && sudo apt-get install libpq-dev
 
 # Install PDF converter
 RUN curl -s https://dl.xpdfreader.com/xpdf-tools-linux-4.04.tar.gz | tar -xvzf - -C /usr/local/bin --strip-components=2 xpdf-tools-linux-4.04/bin64/pdftotext
