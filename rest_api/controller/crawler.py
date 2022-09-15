@@ -58,6 +58,6 @@ def crawl(
     params = {}
     for preprocessor in preprocessors:
         params[preprocessor.name] = preprocessor_params.dict()
-    params['crawler'] = {'urls': urls, 'return_documents': True}
+    params['crawler'] = {'urls': urls, 'return_documents': True, 'output_dir': FILE_UPLOAD_PATH}
 
     crawling_pipeline.run(params=params, meta=meta_form)
