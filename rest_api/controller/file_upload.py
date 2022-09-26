@@ -40,10 +40,10 @@ class PreprocessorParams(BaseModel):
 class Response(BaseModel):
     file_id: str
     ################ CUSTOM ################
-    debug: Optional[Dict] = Field(None, alias="_debug")
+    # debug: Optional[Dict] = Field(None, alias="_debug")
 
 
-@router.post("/file-upload", response_model=Response)
+@router.post("/file-upload")
 def upload_file(
     files: List[UploadFile] = File(...),
     # JSON serialized string
