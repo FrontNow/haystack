@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from functools import wraps
 import inspect
 import logging
+import time
 
 from haystack.schema import Document, MultiLabel
 from haystack.errors import PipelineSchemaError
@@ -242,7 +243,14 @@ class BaseComponent(ABC):
             if key in run_signature_args:
                 run_inputs[key] = value
 
+        ##################### CUSTOM #################
+        # Get current time
+        start_time = time.time()
+
         output, stream = run_method(**run_inputs, **run_params)
+
+        ##################### CUSTOM #################
+        end_time = time.time()
 
         # Collect debug information
         debug_info = {}
@@ -253,6 +261,10 @@ class BaseComponent(ABC):
             # Include output, exclude _debug to avoid recursion
             filtered_output = {key: value for key, value in output.items() if key != "_debug"}
             debug_info["output"] = filtered_output
+            ##################### CUSTOM #################
+            # Output taken time in seconds between start_time and end_time
+            debug_info["time"] = end_time - start_time
+
         # Include custom debug info
         custom_debug = output.get("_debug", {})
         if custom_debug:
