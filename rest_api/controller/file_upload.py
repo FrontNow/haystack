@@ -43,7 +43,7 @@ class Response(BaseModel):
     debug: Optional[Dict] = Field(None, alias="_debug")
 
 
-@router.post("/file-upload")
+@router.post("/file-upload", response_model=Response)
 def upload_file(
     files: List[UploadFile] = File(...),
     # JSON serialized string
@@ -88,4 +88,4 @@ def upload_file(
     for preprocessor in preprocessors:
         params[preprocessor.name] = preprocessor_params.dict()
 
-    return indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params, debug=debug)
+    return indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params, debug=True)
