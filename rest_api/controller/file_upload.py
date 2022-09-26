@@ -48,6 +48,7 @@ def upload_file(
     meta: Optional[str] = Form("null"),  # type: ignore
     fileconverter_params: FileConverterParams = Depends(FileConverterParams.as_form),  # type: ignore
     preprocessor_params: PreprocessorParams = Depends(PreprocessorParams.as_form),  # type: ignore
+    debug: Optional[bool] = None, # type: ignore
 ):
     """
     You can use this endpoint to upload a file for indexing
@@ -85,4 +86,4 @@ def upload_file(
     for preprocessor in preprocessors:
         params[preprocessor.name] = preprocessor_params.dict()
 
-    indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params)
+    indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params, debug=debug)
