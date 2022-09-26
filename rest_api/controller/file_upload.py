@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 import json
 import shutil
@@ -6,7 +6,7 @@ import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from haystack import Pipeline
 from haystack.nodes import BaseConverter, PreProcessor
 
@@ -39,6 +39,8 @@ class PreprocessorParams(BaseModel):
 
 class Response(BaseModel):
     file_id: str
+    ################ CUSTOM ################
+    debug: Optional[Dict] = Field(None, alias="_debug")
 
 
 @router.post("/file-upload")
