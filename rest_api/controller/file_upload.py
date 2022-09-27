@@ -39,11 +39,12 @@ class PreprocessorParams(BaseModel):
 
 class Response(BaseModel):
     file_id: str
-    ################ CUSTOM ################
-    # debug: Optional[Dict] = Field(None, alias="_debug")
+
+class UploadResponse(BaseModel):
+    debug: Optional[Dict] = Field(None, alias="_debug")
 
 
-@router.post("/file-upload")
+@router.post("/file-upload", response_model=UploadResponse, response_model_exclude_none=True)
 def upload_file(
     files: List[UploadFile] = File(...),
     # JSON serialized string
@@ -88,4 +89,4 @@ def upload_file(
     for preprocessor in preprocessors:
         params[preprocessor.name] = preprocessor_params.dict()
 
-    return indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params, debug=True)
+    return indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params, debug=debug)
