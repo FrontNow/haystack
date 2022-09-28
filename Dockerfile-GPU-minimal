@@ -24,6 +24,9 @@ RUN apt-get update && apt-get install -y software-properties-common && \
     curl -s https://dl.xpdfreader.com/xpdf-tools-linux-4.04.tar.gz \
     | tar -xvzf - -C /usr/local/bin --strip-components=2 xpdf-tools-linux-4.04/bin64/pdftotext
 
+# install psycopg2 dependencies
+RUN apt-get update && apt-get install libpq-dev -y
+
 # Copy Haystack package files but not the source code
 COPY setup.py setup.cfg pyproject.toml VERSION.txt LICENSE README.md /home/user/
 
