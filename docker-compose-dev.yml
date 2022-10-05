@@ -46,7 +46,7 @@ services:
     platform: linux/amd64
     build:
       context: ui
-      dockerfile: Dockerfile-GPU # This makes no sense but psycopg2 does not work in Dockerfile for me
+      dockerfile: Dockerfile
     image: "deepset/haystack-streamlit-ui:latest"
     ports:
       - 8501:8501
