@@ -1,4 +1,6 @@
-FROM python:3.7.4-stretch
+FROM --platform=linux/amd64 python:3.7.4-stretch
+# I added platform as suggested here: https://stackoverflow.com/questions/65612411/forcing-docker-to-use-linux-amd64-platform-by-default-on-macos/69636473#69636473
+# I had the following error: scram authentication requires libpq version 10 or above
 
 WORKDIR /home/user
 
