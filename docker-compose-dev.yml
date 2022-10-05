@@ -6,7 +6,7 @@ services:
     platform: linux/amd64
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-GPU # This makes no sense but psycopg2 does not work in Dockerfile for me
       # image: "deepset/haystack-cpu:latest"
     # Mount custom Pipeline YAML and custom Components.
     volumes:
@@ -46,7 +46,7 @@ services:
     platform: linux/amd64
     build:
       context: ui
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-GPU # This makes no sense but psycopg2 does not work in Dockerfile for me
     image: "deepset/haystack-streamlit-ui:latest"
     ports:
       - 8501:8501

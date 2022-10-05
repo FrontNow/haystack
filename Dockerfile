@@ -16,10 +16,7 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 
 # install psycopg2 dependencies
-RUN apt update -y && apt install -y build-essential libpq-dev
-RUN pip install --upgrade pip
-RUN pip3 install psycopg2-binary --no-binary psycopg2-binary
-# RUN apt-get update && apt-get install libpq-dev -y
+RUN apt-get update && apt-get install libpq-dev -y
 
 # Install PDF converter
 RUN wget --no-check-certificate https://dl.xpdfreader.com/xpdf-tools-linux-4.04.tar.gz && \
