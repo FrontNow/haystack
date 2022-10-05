@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y \
     poppler-utils && \
     rm -rf /var/lib/apt/lists/*
 
+# install psycopg2 dependencies
+RUN apt-get update && apt-get install libpq-dev -y
+
 # Install PDF converter
 RUN wget --no-check-certificate https://dl.xpdfreader.com/xpdf-tools-linux-4.04.tar.gz && \
     tar -xvf xpdf-tools-linux-4.04.tar.gz && cp xpdf-tools-linux-4.04/bin64/pdftotext /usr/local/bin
