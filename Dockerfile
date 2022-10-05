@@ -29,7 +29,7 @@ COPY rest_api /home/user/rest_api/
 
 # Install package
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir .[docstores,crawler,preprocessing,ocr,ray]
+RUN pip install --no-cache-dir .[docstores,crawler,preprocessing,ocr,ray,rest-api]
 RUN pip install --no-cache-dir rest_api/
 RUN ls /home/user
 RUN pip freeze
