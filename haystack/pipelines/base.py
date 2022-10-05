@@ -1808,6 +1808,7 @@ class Pipeline:
                 "seems like the component does not exist. Did you spell its name correctly?"
             ) from ke
         except Exception as e:
+            logger.error(f"Failed loading pipeline component '{name}': {e}")
             raise PipelineConfigError(
                 f"Failed loading pipeline component '{name}'. " "See the stacktrace above for more informations."
             ) from e
