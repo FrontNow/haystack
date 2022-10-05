@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 
 # install psycopg2 dependencies
-RUN export DOCKER_DEFAULT_PLATFORM=linux/amd64
 RUN apt-get update && apt-get install libpq-dev -y
 
 # Install PDF converter

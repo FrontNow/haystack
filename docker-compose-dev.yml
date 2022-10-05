@@ -1,6 +1,9 @@
 version: "3"
 services:
   haystack-api:
+    # I added platform as suggested here: https://stackoverflow.com/questions/65612411/forcing-docker-to-use-linux-amd64-platform-by-default-on-macos/69636473#69636473
+    # I had the following error: scram authentication requires libpq version 10 or above
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
@@ -22,6 +25,9 @@ services:
     # If you need to handle large loads of incoming requests and have memory to spare, consider increasing the number of workers
     command: "/bin/bash -c 'sleep 10 && gunicorn rest_api.application:app -b 0.0.0.0 -k uvicorn.workers.UvicornWorker --workers 30 --timeout 600'"
   elasticsearch:
+    # I added platform as suggested here: https://stackoverflow.com/questions/65612411/forcing-docker-to-use-linux-amd64-platform-by-default-on-macos/69636473#69636473
+    # I had the following error: scram authentication requires libpq version 10 or above
+    platform: linux/amd64
     # This will start an empty elasticsearch instance (so you have to add your documents yourself)
     image: "elasticsearch:8.3.3"
     # If you want a demo image instead that is "ready-to-query" with some indexed articles
@@ -35,6 +41,9 @@ services:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
   ui:
+    # I added platform as suggested here: https://stackoverflow.com/questions/65612411/forcing-docker-to-use-linux-amd64-platform-by-default-on-macos/69636473#69636473
+    # I had the following error: scram authentication requires libpq version 10 or above
+    platform: linux/amd64
     build:
       context: ui
       dockerfile: Dockerfile
