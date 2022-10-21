@@ -272,6 +272,8 @@ class BaseComponent(ABC):
             ##################### CUSTOM #################
             # Output taken time in seconds between start_time and end_time
             debug_info["time"] = end_time - start_time
+            debug_info["start_time"] = start_time
+            debug_info["end_time"] = end_time
 
         # Include custom debug info
         custom_debug = output.get("_debug", {})
