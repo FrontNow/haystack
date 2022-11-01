@@ -25,6 +25,9 @@ RUN apt-get update && apt-get install -y software-properties-common && \
         wget && \
     rm -rf /var/lib/apt/lists/*
 
+# install psycopg2 dependencies
+RUN apt-get update && apt-get install libpq-dev -y
+
 # Install PDF converter
 RUN curl -s https://dl.xpdfreader.com/xpdf-tools-linux-4.04.tar.gz | tar -xvzf - -C /usr/local/bin --strip-components=2 xpdf-tools-linux-4.04/bin64/pdftotext
 
@@ -41,7 +44,7 @@ COPY rest_api /home/user/rest_api/
 
 # Install package
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir .[docstores-gpu,crawler,preprocessing,ocr,ray]
+RUN pip install --no-cache-dir .[docstores-gpu,crawler,preprocessing,ocr,ray,rest-api]
 RUN pip install --no-cache-dir rest_api/
 # Install PyTorch for CUDA 11
 RUN pip3 install --no-cache-dir torch==1.10.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html
@@ -63,4 +66,4 @@ EXPOSE 8000
 ENV HAYSTACK_DOCKER_CONTAINER="HAYSTACK_GPU_CONTAINER"
 
 # cmd for running the API (note: "--preload" is not working with cuda)
-CMD ["gunicorn", "rest_api.application:app",  "-b", "0.0.0.0", "-k", "uvicorn.workers.UvicornWorker", "--workers", "1", "--timeout", "180"]
+CMD ["gunicorn", "rest_api.application:app",  "-b", "0.0.0.0", "-k", "uvicorn.workers.UvicornWorker", "--workers", "1", "--timeout", "600"]

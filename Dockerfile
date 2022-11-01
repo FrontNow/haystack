@@ -1,4 +1,6 @@
-FROM python:3.7.4-stretch
+FROM --platform=linux/amd64 python:3.7.4-stretch
+# I added platform as suggested here: https://stackoverflow.com/questions/65612411/forcing-docker-to-use-linux-amd64-platform-by-default-on-macos/69636473#69636473
+# I had the following error: scram authentication requires libpq version 10 or above
 
 WORKDIR /home/user
 
@@ -13,6 +15,9 @@ RUN apt-get update && apt-get install -y \
     poppler-utils && \
     rm -rf /var/lib/apt/lists/*
 
+# install psycopg2 dependencies
+RUN apt-get update && apt-get install libpq-dev -y
+
 # Install PDF converter
 RUN wget --no-check-certificate https://dl.xpdfreader.com/xpdf-tools-linux-4.04.tar.gz && \
     tar -xvf xpdf-tools-linux-4.04.tar.gz && cp xpdf-tools-linux-4.04/bin64/pdftotext /usr/local/bin
@@ -26,7 +31,7 @@ COPY rest_api /home/user/rest_api/
 
 # Install package
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir .[docstores,crawler,preprocessing,ocr,ray]
+RUN pip install --no-cache-dir .[docstores,crawler,preprocessing,ocr,ray,rest-api]
 RUN pip install --no-cache-dir rest_api/
 RUN ls /home/user
 RUN pip freeze
@@ -46,4 +51,4 @@ EXPOSE 8000
 ENV HAYSTACK_DOCKER_CONTAINER="HAYSTACK_CPU_CONTAINER"
 
 # cmd for running the API
-CMD ["gunicorn", "rest_api.application:app", "-b", "0.0.0.0", "-k", "uvicorn.workers.UvicornWorker", "--workers", "1", "--timeout", "180"]
+CMD ["gunicorn", "rest_api.application:app", "-b", "0.0.0.0", "-k", "uvicorn.workers.UvicornWorker", "--workers", "1", "--timeout", "600"]

@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 import json
 import shutil
@@ -6,7 +6,7 @@ import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from haystack import Pipeline
 from haystack.nodes import BaseConverter, PreProcessor
 
@@ -40,14 +40,18 @@ class PreprocessorParams(BaseModel):
 class Response(BaseModel):
     file_id: str
 
+class UploadResponse(BaseModel):
+    debug: Optional[Dict] = Field(None, alias="_debug")
 
-@router.post("/file-upload")
+
+@router.post("/file-upload", response_model=UploadResponse, response_model_exclude_none=True)
 def upload_file(
     files: List[UploadFile] = File(...),
     # JSON serialized string
     meta: Optional[str] = Form("null"),  # type: ignore
     fileconverter_params: FileConverterParams = Depends(FileConverterParams.as_form),  # type: ignore
     preprocessor_params: PreprocessorParams = Depends(PreprocessorParams.as_form),  # type: ignore
+    debug: Optional[bool] = None, # type: ignore
 ):
     """
     You can use this endpoint to upload a file for indexing
@@ -85,4 +89,4 @@ def upload_file(
     for preprocessor in preprocessors:
         params[preprocessor.name] = preprocessor_params.dict()
 
-    indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params)
+    return indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params, debug=debug)

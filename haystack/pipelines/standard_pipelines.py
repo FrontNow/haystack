@@ -133,7 +133,8 @@ class BaseStandardPipeline(ABC):
         standard_pipeline_object = cls.__new__(
             cls
         )  # necessary because we can't call __init__ as we can't provide parameters
-        standard_pipeline_object.pipeline = Pipeline.load_from_yaml(path, pipeline_name, overwrite_with_env_variables)
+        standard_pipeline_object.pipeline = Pipeline.load_from_yaml(
+            path, pipeline_name, overwrite_with_env_variables)
         return standard_pipeline_object
 
     def get_nodes_by_class(self, class_type) -> List[Any]:
@@ -150,13 +151,13 @@ class BaseStandardPipeline(ABC):
         """
         return self.pipeline.get_nodes_by_class(class_type)
 
-    def get_document_store(self) -> Optional[BaseDocumentStore]:
-        """
-        Return the document store object used in the current pipeline.
+    # def get_document_store(self) -> Optional[BaseDocumentStore]:
+    #     """
+    #     Return the document store object used in the current pipeline.
 
-        :return: Instance of DocumentStore or None
-        """
-        return self.pipeline.get_document_store()
+    #     :return: Instance of DocumentStore or None
+    #     """
+    #     return self.pipeline.get_document_store()
 
     def eval(
         self,
@@ -171,7 +172,6 @@ class BaseStandardPipeline(ABC):
         context_matching_boost_split_overlaps: bool = True,
         context_matching_threshold: float = 65.0,
     ) -> EvaluationResult:
-
         """
         Evaluates the pipeline by running the pipeline once per query in debug mode
         and putting together all data that is needed for evaluation, e.g. calculating metrics.
@@ -230,8 +230,10 @@ class BaseStandardPipeline(ABC):
             "answer",
             "document_id_or_answer",
         ] = "document_id_or_answer",
-        answer_scope: Literal["any", "context", "document_id", "document_id_and_context"] = "any",
-        wrong_examples_fields: List[str] = ["answer", "context", "document_id"],
+        answer_scope: Literal["any", "context",
+                              "document_id", "document_id_and_context"] = "any",
+        wrong_examples_fields: List[str] = [
+            "answer", "context", "document_id"],
         max_characters_per_field: int = 150,
     ):
         """
@@ -295,7 +297,8 @@ class BaseStandardPipeline(ABC):
                       All debug information can then be found in the dict returned
                       by this method under the key "_debug"
         """
-        output = self.pipeline.run_batch(queries=queries, params=params, debug=debug)
+        output = self.pipeline.run_batch(
+            queries=queries, params=params, debug=debug)
         return output
 
 
@@ -310,8 +313,10 @@ class ExtractiveQAPipeline(BaseStandardPipeline):
         :param retriever: Retriever instance
         """
         self.pipeline = Pipeline()
-        self.pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
-        self.pipeline.add_node(component=reader, name="Reader", inputs=["Retriever"])
+        self.pipeline.add_node(component=retriever,
+                               name="Retriever", inputs=["Query"])
+        self.pipeline.add_node(
+            component=reader, name="Reader", inputs=["Retriever"])
         self.metrics_filter = {"Retriever": ["recall_single_hit"]}
 
     def run(self, query: str, params: Optional[dict] = None, debug: Optional[bool] = None):
@@ -339,7 +344,8 @@ class DocumentSearchPipeline(BaseStandardPipeline):
         :param retriever: Retriever instance
         """
         self.pipeline = Pipeline()
-        self.pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
+        self.pipeline.add_node(component=retriever,
+                               name="Retriever", inputs=["Query"])
 
     def run(self, query: str, params: Optional[dict] = None, debug: Optional[bool] = None):
         """
@@ -366,8 +372,10 @@ class GenerativeQAPipeline(BaseStandardPipeline):
         :param retriever: Retriever instance
         """
         self.pipeline = Pipeline()
-        self.pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
-        self.pipeline.add_node(component=generator, name="Generator", inputs=["Retriever"])
+        self.pipeline.add_node(component=retriever,
+                               name="Retriever", inputs=["Query"])
+        self.pipeline.add_node(component=generator,
+                               name="Generator", inputs=["Retriever"])
 
     def run(self, query: str, params: Optional[dict] = None, debug: Optional[bool] = None):
         """
@@ -398,8 +406,10 @@ class SearchSummarizationPipeline(BaseStandardPipeline):
                                         pipeline as a "drop-in replacement" for other QA pipelines.
         """
         self.pipeline = Pipeline()
-        self.pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
-        self.pipeline.add_node(component=summarizer, name="Summarizer", inputs=["Retriever"])
+        self.pipeline.add_node(component=retriever,
+                               name="Retriever", inputs=["Query"])
+        self.pipeline.add_node(component=summarizer,
+                               name="Summarizer", inputs=["Retriever"])
         self.return_in_answer_format = return_in_answer_format
 
     def run(self, query: str, params: Optional[dict] = None, debug: Optional[bool] = None):
@@ -449,7 +459,8 @@ class SearchSummarizationPipeline(BaseStandardPipeline):
                       All debug information can then be found in the dict returned
                       by this method under the key "_debug"
         """
-        output = self.pipeline.run_batch(queries=queries, params=params, debug=debug)
+        output = self.pipeline.run_batch(
+            queries=queries, params=params, debug=debug)
 
         # Convert to answer format to allow "drop-in replacement" for other QA pipelines
         if self.return_in_answer_format:
@@ -486,8 +497,10 @@ class FAQPipeline(BaseStandardPipeline):
         :param retriever: Retriever instance
         """
         self.pipeline = Pipeline()
-        self.pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
-        self.pipeline.add_node(component=Docs2Answers(), name="Docs2Answers", inputs=["Retriever"])
+        self.pipeline.add_node(component=retriever,
+                               name="Retriever", inputs=["Query"])
+        self.pipeline.add_node(component=Docs2Answers(),
+                               name="Docs2Answers", inputs=["Retriever"])
 
     def run(self, query: str, params: Optional[dict] = None, debug: Optional[bool] = None):
         """
@@ -522,7 +535,8 @@ class TranslationWrapperPipeline(BaseStandardPipeline):
         """
 
         self.pipeline = Pipeline()
-        self.pipeline.add_node(component=input_translator, name="InputTranslator", inputs=["Query"])
+        self.pipeline.add_node(component=input_translator,
+                               name="InputTranslator", inputs=["Query"])
         # Make use of run_batch instead of run for output_translator if pipeline is a QuestionAnswerGenerationPipeline,
         # as the reader's run method is overwritten by its run_batch method, which is incompatible with the translator's
         # run method.
@@ -538,12 +552,15 @@ class TranslationWrapperPipeline(BaseStandardPipeline):
 
             # TODO: Do not work properly for Join Node and Answer format
             if graph.nodes[node]["inputs"] and len(graph.nodes[node]["inputs"]) > 1:
-                raise AttributeError("Split and merge nodes are not supported currently")
+                raise AttributeError(
+                    "Split and merge nodes are not supported currently")
 
-            self.pipeline.add_node(name=node, component=graph.nodes[node]["component"], inputs=previous_node_name)
+            self.pipeline.add_node(
+                name=node, component=graph.nodes[node]["component"], inputs=previous_node_name)
             previous_node_name = [node]
 
-        self.pipeline.add_node(component=output_translator, name="OutputTranslator", inputs=previous_node_name)
+        self.pipeline.add_node(component=output_translator,
+                               name="OutputTranslator", inputs=previous_node_name)
 
     def run(self, **kwargs):
         output = self.pipeline.run(**kwargs)
@@ -562,10 +579,12 @@ class QuestionGenerationPipeline(BaseStandardPipeline):
 
     def __init__(self, question_generator: QuestionGenerator):
         self.pipeline = Pipeline()
-        self.pipeline.add_node(component=question_generator, name="QuestionGenerator", inputs=["Query"])
+        self.pipeline.add_node(component=question_generator,
+                               name="QuestionGenerator", inputs=["Query"])
 
     def run(self, documents, params: Optional[dict] = None, debug: Optional[bool] = None):
-        output = self.pipeline.run(documents=documents, params=params, debug=debug)
+        output = self.pipeline.run(
+            documents=documents, params=params, debug=debug)
         return output
 
     def run_batch(  # type: ignore
@@ -574,7 +593,8 @@ class QuestionGenerationPipeline(BaseStandardPipeline):
         params: Optional[dict] = None,
         debug: Optional[bool] = None,
     ):
-        output = self.pipeline.run_batch(documents=documents, params=params, debug=debug)
+        output = self.pipeline.run_batch(
+            documents=documents, params=params, debug=debug)
         return output
 
 
@@ -586,8 +606,10 @@ class RetrieverQuestionGenerationPipeline(BaseStandardPipeline):
 
     def __init__(self, retriever: BaseRetriever, question_generator: QuestionGenerator):
         self.pipeline = Pipeline()
-        self.pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
-        self.pipeline.add_node(component=question_generator, name="Question Generator", inputs=["Retriever"])
+        self.pipeline.add_node(component=retriever,
+                               name="Retriever", inputs=["Query"])
+        self.pipeline.add_node(component=question_generator,
+                               name="Question Generator", inputs=["Retriever"])
 
     def run(self, query: str, params: Optional[dict] = None, debug: Optional[bool] = None):
         output = self.pipeline.run(query=query, params=params, debug=debug)
@@ -601,12 +623,15 @@ class QuestionAnswerGenerationPipeline(BaseStandardPipeline):
     """
 
     def __init__(self, question_generator: QuestionGenerator, reader: BaseReader):
-        setattr(question_generator, "run", self.formatting_wrapper(question_generator.run))
+        setattr(question_generator, "run",
+                self.formatting_wrapper(question_generator.run))
         # Overwrite reader.run function so it can handle a batch of questions being passed on by the QuestionGenerator
         setattr(reader, "run", reader.run_batch)
         self.pipeline = Pipeline()
-        self.pipeline.add_node(component=question_generator, name="QuestionGenerator", inputs=["Query"])
-        self.pipeline.add_node(component=reader, name="Reader", inputs=["QuestionGenerator"])
+        self.pipeline.add_node(component=question_generator,
+                               name="QuestionGenerator", inputs=["Query"])
+        self.pipeline.add_node(component=reader, name="Reader", inputs=[
+                               "QuestionGenerator"])
 
     # This is used to format the output of the QuestionGenerator so that its questions are ready to be answered by the reader
     def formatting_wrapper(self, fn):
@@ -617,7 +642,8 @@ class QuestionAnswerGenerationPipeline(BaseStandardPipeline):
             documents = []
             for generated_questions, doc in zip(output["generated_questions"], output["documents"]):
                 questions.extend(generated_questions["questions"])
-                documents.extend([[doc]] * len(generated_questions["questions"]))
+                documents.extend(
+                    [[doc]] * len(generated_questions["questions"]))
             kwargs["queries"] = questions
             kwargs["documents"] = documents
             return kwargs, output_stream
@@ -625,9 +651,11 @@ class QuestionAnswerGenerationPipeline(BaseStandardPipeline):
         return wrapper
 
     def run(
-        self, documents: List[Document], params: Optional[dict] = None, debug: Optional[bool] = None  # type: ignore
+        # type: ignore
+        self, documents: List[Document], params: Optional[dict] = None, debug: Optional[bool] = None
     ):
-        output = self.pipeline.run(documents=documents, params=params, debug=debug)
+        output = self.pipeline.run(
+            documents=documents, params=params, debug=debug)
         return output
 
 
@@ -659,7 +687,8 @@ class MostSimilarDocumentsPipeline(BaseStandardPipeline):
         self.document_store.return_embedding = False  # type: ignore
         return similar_documents
 
-    def run_batch(self, document_ids: List[str], top_k: int = 5):  # type: ignore
+    # type: ignore
+    def run_batch(self, document_ids: List[str], top_k: int = 5):
         """
         :param document_ids: document ids
         :param top_k: How many documents id to return against single document

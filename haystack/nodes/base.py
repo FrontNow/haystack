@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from functools import wraps
 import inspect
 import logging
+import time
 
 from haystack.schema import Document, MultiLabel
 from haystack.errors import PipelineSchemaError
@@ -29,7 +30,8 @@ def exportable_to_yaml(init_func):
 
         # Create the configuration dictionary if it doesn't exist yet
         if not self._component_config:
-            self._component_config = {"params": {}, "type": type(self).__name__}
+            self._component_config = {
+                "params": {}, "type": type(self).__name__}
 
         # NOTE: inner classes constructor's __qualname__ will include the outer class' name,
         # e.g. "OuterClass.InnerClass.__init__". We then take only the last two parts of the
@@ -62,8 +64,10 @@ class BaseComponent(ABC):
     def __init__(self):
         # a small subset of the component's parameters is sent in an event after applying filters defined in haystack.telemetry.NonPrivateParameters
         component_params = self._component_config.get("params", {})
-        send_custom_event(event=f"{type(self).__name__} initialized", payload=component_params)
-        self.outgoing_edges = self._calculate_outgoing_edges(component_params=component_params)
+        send_custom_event(
+            event=f"{type(self).__name__} initialized", payload=component_params)
+        self.outgoing_edges = self._calculate_outgoing_edges(
+            component_params=component_params)
 
     # __init_subclass__ is invoked when a subclass of BaseComponent is _imported_
     # (not instantiated). It works approximately as a metaclass.
@@ -109,7 +113,8 @@ class BaseComponent(ABC):
         return self._component_config["type"]
 
     def get_params(self, return_defaults: bool = False) -> Dict[str, Any]:
-        component_signature = dict(inspect.signature(self.__class__).parameters)
+        component_signature = dict(
+            inspect.signature(self.__class__).parameters)
         params: Dict[str, Any] = {}
         for key, value in self._component_config["params"].items():
             if value != component_signature[key].default or return_defaults:
@@ -123,7 +128,8 @@ class BaseComponent(ABC):
     @classmethod
     def get_subclass(cls, component_type: str) -> Type[BaseComponent]:
         if component_type not in cls._subclasses.keys():
-            raise PipelineSchemaError(f"Haystack component with the name '{component_type}' not found.")
+            raise PipelineSchemaError(
+                f"Haystack component with the name '{component_type}' not found.")
         subclass = cls._subclasses[component_type]
         return subclass
 
@@ -186,7 +192,8 @@ class BaseComponent(ABC):
         queries: Optional[Union[str, List[str]]] = None,
         file_paths: Optional[List[str]] = None,
         labels: Optional[Union[MultiLabel, List[MultiLabel]]] = None,
-        documents: Optional[Union[List[Document], List[List[Document]]]] = None,
+        documents: Optional[Union[List[Document],
+                                  List[List[Document]]]] = None,
         meta: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]] = None,
         params: Optional[dict] = None,
         debug: Optional[bool] = None,
@@ -231,7 +238,8 @@ class BaseComponent(ABC):
 
                     for _k, _v in value.items():
                         if _k not in run_signature_args:
-                            raise Exception(f"Invalid parameter '{_k}' for the node '{self.name}'.")
+                            raise Exception(
+                                f"Invalid parameter '{_k}' for the node '{self.name}'.")
 
                 run_params.update(**value)
             elif key in run_signature_args:  # global params
@@ -242,7 +250,14 @@ class BaseComponent(ABC):
             if key in run_signature_args:
                 run_inputs[key] = value
 
+        ##################### CUSTOM #################
+        # Get current time
+        start_time = time.time()
+
         output, stream = run_method(**run_inputs, **run_params)
+
+        ##################### CUSTOM #################
+        end_time = time.time()
 
         # Collect debug information
         debug_info = {}
@@ -251,8 +266,15 @@ class BaseComponent(ABC):
             debug_info["input"] = {**run_inputs, **run_params}
             debug_info["input"]["debug"] = self.debug
             # Include output, exclude _debug to avoid recursion
-            filtered_output = {key: value for key, value in output.items() if key != "_debug"}
+            filtered_output = {key: value for key,
+                               value in output.items() if key != "_debug"}
             debug_info["output"] = filtered_output
+            ##################### CUSTOM #################
+            # Output taken time in seconds between start_time and end_time
+            debug_info["time"] = end_time - start_time
+            debug_info["start_time"] = start_time
+            debug_info["end_time"] = end_time
+
         # Include custom debug info
         custom_debug = output.get("_debug", {})
         if custom_debug:
@@ -267,7 +289,7 @@ class BaseComponent(ABC):
 
         # add "extra" args that were not used by the node
         for k, v in arguments.items():
-            if k not in output.keys():
+            if k not in output.keys() and k != "inputs":
                 output[k] = v
 
         output["params"] = params

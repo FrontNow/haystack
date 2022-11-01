@@ -20,8 +20,10 @@ from haystack.errors import PipelineError, PipelineConfigError, PipelineSchemaEr
 
 logger = logging.getLogger(__name__)
 
-
-VALID_INPUT_REGEX = re.compile(r"^[-a-zA-Z0-9_/\\.:]+$")
+################################ CUSTOM #################################
+# I changed this VALID_INPUT_REGEX. 
+################################ CUSTOM #################################
+VALID_INPUT_REGEX = re.compile(r"^.+$")
 VALID_ROOT_NODES = ["Query", "File"]
 
 
