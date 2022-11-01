@@ -20,6 +20,7 @@ from haystack.nodes.translator.base import BaseTranslator
 from haystack.nodes.question_generator.question_generator import QuestionGenerator
 from haystack.document_stores.base import BaseDocumentStore
 from haystack.pipelines.base import Pipeline
+from haystack.nodes import PreProcessor, TextConverter
 
 
 logger = logging.getLogger(__name__)
@@ -159,6 +160,22 @@ class BaseStandardPipeline(ABC):
     #     """
     #     return self.pipeline.get_document_store()
 
+    def get_type(self) -> str:
+        """
+        Return the type of the pipeline.
+
+        :return: Type of the pipeline
+        """
+        return self.pipeline.get_type()
+
+    def get_type(self) -> str:
+        """
+        Return the type of the pipeline.
+
+        :return: Type of the pipeline
+        """
+        return self.pipeline.get_type()
+
     def eval(
         self,
         labels: List[MultiLabel],
@@ -204,6 +221,65 @@ class BaseStandardPipeline(ABC):
         :param context_matching_threshold: Score threshold that candidates must surpass to be included into the result list. Range: [0,100]
         """
         output = self.pipeline.eval(
+            labels=labels,
+            params=params,
+            sas_model_name_or_path=sas_model_name_or_path,
+            sas_batch_size=sas_batch_size,
+            sas_use_gpu=sas_use_gpu,
+            add_isolated_node_eval=add_isolated_node_eval,
+            custom_document_id_field=custom_document_id_field,
+            context_matching_boost_split_overlaps=context_matching_boost_split_overlaps,
+            context_matching_min_length=context_matching_min_length,
+            context_matching_threshold=context_matching_threshold,
+        )
+        return output
+
+    def eval_batch(
+        self,
+        labels: List[MultiLabel],
+        params: Optional[dict] = None,
+        sas_model_name_or_path: Optional[str] = None,
+        sas_batch_size: int = 32,
+        sas_use_gpu: bool = True,
+        add_isolated_node_eval: bool = False,
+        custom_document_id_field: Optional[str] = None,
+        context_matching_min_length: int = 100,
+        context_matching_boost_split_overlaps: bool = True,
+        context_matching_threshold: float = 65.0,
+    ) -> EvaluationResult:
+
+        """
+         Evaluates the pipeline by running the pipeline once per query in the debug mode
+         and putting together all data that is needed for evaluation, for example, calculating metrics.
+
+        To calculate SAS (Semantic Answer Similarity) metrics, specify `sas_model_name_or_path`.
+
+         You can control the scope within which an Answer or a Document is considered correct afterwards (see `document_scope` and `answer_scope` params in `EvaluationResult.calculate_metrics()`).
+         For some of these scopes, you need to add the following information during `eval()`:
+         - `custom_document_id_field` parameter to select a custom document ID from document's metadata for ID matching (only affects 'document_id' scopes).
+         - `context_matching_...` parameter to fine-tune the fuzzy matching mechanism that determines whether text contexts match each other (only affects 'context' scopes, default values should work most of the time).
+
+         :param labels: The labels to evaluate on.
+         :param params: Parameters for the `retriever` and `reader`. For instance,
+                        params={"Retriever": {"top_k": 10}, "Reader": {"top_k": 5}}.
+         :param sas_model_name_or_path: Sentence transformers semantic textual similarity model you want to use for the SAS value calculation.
+                                     It should be a path or a string pointing to downloadable models.
+         :param sas_batch_size: Number of prediction label pairs to encode at once by cross encoder or sentence transformer while calculating SAS.
+         :param sas_use_gpu: Whether to use a GPU or the CPU for calculating semantic answer similarity.
+                             Falls back to CPU if no GPU is available.
+         :param add_isolated_node_eval: Whether to additionally evaluate the reader based on labels as input, instead of the output of the previous node in the pipeline.
+         :param custom_document_id_field: Custom field name within `Document`'s `meta` which identifies the document and is used as a criterion for matching documents to labels during evaluation.
+                                          This is especially useful if you want to match documents on other criteria (for example, file names) than the default document IDs, as these could be heavily influenced by preprocessing.
+                                          If not set, the default `Document`'s `id` is used as the criterion for matching documents to labels.
+         :param context_matching_min_length: The minimum string length context and candidate need to have to be scored.
+                            Returns 0.0 otherwise.
+         :param context_matching_boost_split_overlaps: Whether to boost split overlaps (for example, [AB] <-> [BC]) that result from different preprocessing parameters.
+                                  If we detect that the score is near a half match and the matching part of the candidate is at its boundaries,
+                                  we cut the context on the same side, recalculate the score, and take the mean of both.
+                                  Thus [AB] <-> [BC] (score ~50) gets recalculated with B <-> B (score ~100) scoring ~75 in total.
+         :param context_matching_threshold: Score threshold that candidates must surpass to be included into the result list. Range: [0,100]
+        """
+        output = self.pipeline.eval_batch(
             labels=labels,
             params=params,
             sas_model_name_or_path=sas_model_name_or_path,
@@ -543,7 +619,10 @@ class TranslationWrapperPipeline(BaseStandardPipeline):
         if isinstance(pipeline, QuestionAnswerGenerationPipeline):
             setattr(output_translator, "run", output_translator.run_batch)
 
-        graph = pipeline.pipeline.graph
+        if hasattr(pipeline, "pipeline"):
+            graph = pipeline.pipeline.graph
+        else:
+            graph = pipeline.graph  # type: ignore
         previous_node_name = ["InputTranslator"]
         # Traverse in BFS
         for node in graph.nodes:
@@ -606,10 +685,8 @@ class RetrieverQuestionGenerationPipeline(BaseStandardPipeline):
 
     def __init__(self, retriever: BaseRetriever, question_generator: QuestionGenerator):
         self.pipeline = Pipeline()
-        self.pipeline.add_node(component=retriever,
-                               name="Retriever", inputs=["Query"])
-        self.pipeline.add_node(component=question_generator,
-                               name="Question Generator", inputs=["Retriever"])
+        self.pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
+        self.pipeline.add_node(component=question_generator, name="QuestionGenerator", inputs=["Retriever"])
 
     def run(self, query: str, params: Optional[dict] = None, debug: Optional[bool] = None):
         output = self.pipeline.run(query=query, params=params, debug=debug)
@@ -667,30 +744,81 @@ class MostSimilarDocumentsPipeline(BaseStandardPipeline):
 
         :param document_store: Document Store instance with already stored embeddings.
         """
+        # we create a pipeline and add the document store as a node
+        # however, we do not want to use the document store's run method,
+        # but rather the query_by_embedding method
+        # pipeline property is here so the superclass methods that rely on pipeline property work
+        self.pipeline = Pipeline()
+        self.pipeline.add_node(component=document_store, name="DocumentStore", inputs=["Query"])
         self.document_store = document_store
 
-    def run(self, document_ids: List[str], top_k: int = 5):
+    def run(
+        self,
+        document_ids: List[str],
+        filters: Optional[Dict[str, Union[Dict, List, str, int, float, bool]]] = None,
+        top_k: int = 5,
+        index: Optional[str] = None,
+    ):
         """
         :param document_ids: document ids
+        :param filters: Optional filters to narrow down the search space to documents whose metadata fulfill certain conditions
         :param top_k: How many documents id to return against single document
+        :param index: Optionally specify the name of index to query the document from. If None, the DocumentStore's default index (self.index) will be used.
         """
         similar_documents: list = []
         self.document_store.return_embedding = True  # type: ignore
 
-        for document in self.document_store.get_documents_by_id(ids=document_ids):
+        for document in self.document_store.get_documents_by_id(ids=document_ids, index=index):
             similar_documents.append(
                 self.document_store.query_by_embedding(
-                    query_emb=document.embedding, return_embedding=False, top_k=top_k
+                    query_emb=document.embedding, filters=filters, return_embedding=False, top_k=top_k, index=index
                 )
             )
 
         self.document_store.return_embedding = False  # type: ignore
         return similar_documents
 
-    # type: ignore
-    def run_batch(self, document_ids: List[str], top_k: int = 5):
+    def run_batch(  # type: ignore
+        self,
+        document_ids: List[str],
+        filters: Optional[Dict[str, Union[Dict, List, str, int, float, bool]]] = None,
+        top_k: int = 5,
+        index: Optional[str] = None,
+    ):
         """
         :param document_ids: document ids
+        :param filters: Optional filters to narrow down the search space to documents whose metadata fulfill certain conditions
         :param top_k: How many documents id to return against single document
+        :param index: Optionally specify the name of index to query the document from. If None, the DocumentStore's default index (self.index) will be used.
         """
-        return self.run(document_ids=document_ids, top_k=top_k)
+        return self.run(document_ids=document_ids, filters=filters, top_k=top_k, index=index)
+
+
+class TextIndexingPipeline(BaseStandardPipeline):
+    def __init__(
+        self,
+        document_store: BaseDocumentStore,
+        text_converter: Optional[TextConverter] = None,
+        preprocessor: Optional[PreProcessor] = None,
+    ):
+        """
+        Initialize a basic Pipeline that converts text files into Documents and indexes them into a DocumentStore.
+
+        :param document_store: The DocumentStore to index the Documents into.
+        :param text_converter: A TextConverter object to be used in this pipeline for converting the text files into Documents.
+        :param preprocessor: A PreProcessor object to be used in this pipeline for preprocessing Documents.
+        """
+
+        self.pipeline = Pipeline()
+        self.document_store = document_store
+        self.text_converter = text_converter or TextConverter()
+        self.preprocessor = preprocessor or PreProcessor()
+        self.pipeline.add_node(component=self.text_converter, name="TextConverter", inputs=["File"])
+        self.pipeline.add_node(component=self.preprocessor, name="PreProcessor", inputs=["TextConverter"])
+        self.pipeline.add_node(component=self.document_store, name="DocumentStore", inputs=["PreProcessor"])
+
+    def run(self, file_path):
+        return self.pipeline.run(file_paths=[file_path])
+
+    def run_batch(self, file_paths):
+        return self.pipeline.run_batch(file_paths=file_paths)
