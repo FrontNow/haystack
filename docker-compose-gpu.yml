@@ -13,7 +13,7 @@ services:
           devices:
             - driver: nvidia
               count: 1
-              capabilities: [ gpu ]
+              capabilities: [gpu]
     # # Mount custom Pipeline YAML and custom Components.
     volumes:
       - ~/ai/charlie/src/haystack/pipeline:/home/user/rest_api/pipeline
@@ -23,11 +23,13 @@ services:
     environment:
       # See rest_api/pipeline/pipelines.haystack-pipeline.yml for configurations of Search & Indexing Pipeline.
       # - DOCUMENTSTORE_PARAMS_HOST=elasticsearch
-      - PIPELINE_YAML_PATH=/home/user/rest_api/pipeline/charlie.haystack-pipeline.yml
-      - CONCURRENT_REQUEST_PER_WORKER
+      - PIPELINE_YAML_PATH=/home/user/rest_api/pipeline/charlie-dev.haystack-pipeline-querying.yml
+      - CONCURRENT_REQUEST_PER_WORKER=4
+      - QUERY_PIPELINE_NAME=query
+      - TOKENIZERS_PARALLELISM=false
     depends_on:
       - elasticsearch
-    command: "/bin/bash -c 'sleep 10 && gunicorn rest_api.application:app -b 0.0.0.0 -k uvicorn.workers.UvicornWorker --workers 1 --timeout 180'"
+    command: "/bin/bash -c 'sleep 10 && gunicorn rest_api.application:app -b 0.0.0.0 -k uvicorn.workers.UvicornWorker --workers 1 --timeout 600'"
 
   elasticsearch:
     # This will start an empty elasticsearch instance (so you have to add your documents yourself)
@@ -40,6 +42,8 @@ services:
     restart: on-failure
     environment:
       - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
 
   ui:
     build:

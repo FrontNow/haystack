@@ -19,6 +19,8 @@ services:
       # - DOCUMENTSTORE_PARAMS_HOST=elasticsearch
       - PIPELINE_YAML_PATH=/home/user/rest_api/pipeline/charlie-dev.haystack-pipeline-indexing.yml
       - CONCURRENT_REQUEST_PER_WORKER=4
+      - QUERY_PIPELINE_NAME=query
+      - TOKENIZERS_PARALLELISM=false
     depends_on:
       - elasticsearch
     # Starts REST API with only 2 workers so that it can be run on systems with just 4GB of memory

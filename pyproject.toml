@@ -94,6 +94,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+rest-api = [
+    "deepl>=1.10.0"
+]
 sql = [
   "sqlalchemy>=1.4.2,<2",
   "sqlalchemy_utils",
