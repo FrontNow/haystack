@@ -10,6 +10,8 @@ The classes for the Custom Components must be defined in this file.
 
 from haystack.nodes.base import BaseComponent
 
+print("WARNING: This is a custom component that should not be loaded")
+
 
 class SampleComponent(BaseComponent):
     outgoing_edges: int = 1
