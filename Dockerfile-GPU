@@ -51,10 +51,11 @@ COPY rest_api /home/user/rest_api/
 
 # Install package
 ######### CUSTOM #########
-# i got an error: ModuleNotFoundError: No module named 'six', 'idna'
+# i got an error: ModuleNotFoundError: No module named 'six', 'idna', 'pkg_resources'
 RUN pip install --upgrade pip
 RUN pip install --ignore-installed six
 RUN pip install --ignore-installed idna
+RUN pip install --ignore-installed pkg_resources
 RUN pip install --no-cache-dir .[docstores-gpu,crawler,preprocessing,ocr,ray,rest-api]
 RUN pip install --no-cache-dir rest_api/
 # Install PyTorch for CUDA 11
