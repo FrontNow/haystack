@@ -30,7 +30,7 @@ COPY haystack /opt/haystack/
 # Copy package files & models
 COPY pyproject.toml VERSION.txt LICENSE README.md models* /opt/haystack/
 # Copy REST API code
-COPY rest_api /opt/haystack/rest_api/
+COPY rest_api /opt/haystack/
 
 
 WORKDIR /opt/haystack
