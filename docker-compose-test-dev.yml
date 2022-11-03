@@ -13,14 +13,14 @@ services:
             capabilities: [gpu]
     # Mount custom Pipeline YAML and custom Components.
     volumes:
-      - ~/ai/charlie/src/haystack/pipeline:/opt/venv/lib/python3.7/site-packages/rest_api/rest_api/pipeline
+      - ~/ai/charlie/src/haystack/pipeline:/opt/venv/lib/python3.7/site-packages/rest_api/pipeline
     ports:
       - 80:8000
     restart: on-failure
     environment:
       # See rest_api/pipeline/pipelines.haystack-pipeline.yml for configurations of Search & Indexing Pipeline.
       # - DOCUMENTSTORE_PARAMS_HOST=elasticsearch
-      - PIPELINE_YAML_PATH=/opt/venv/lib/python3.7/site-packages/rest_api/rest_api/pipeline/charlie-dev.haystack-pipeline-test.yml
+      - PIPELINE_YAML_PATH=/opt/venv/lib/python3.7/site-packages/rest_api/pipeline/charlie-dev.haystack-pipeline-test.yml
       - CONCURRENT_REQUEST_PER_WORKER=4
       - QUERY_PIPELINE_NAME=query
       - TOKENIZERS_PARALLELISM=false
