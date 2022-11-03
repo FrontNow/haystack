@@ -80,7 +80,7 @@ target "cpu-latest" {
 }
 
 target "gpu" {
-  dockerfile = "Dockerfile.api"
+  dockerfile = "docker/Dockerfile.api"
   tags = ["${IMAGE_NAME}:gpu-${IMAGE_TAG_SUFFIX}"]
   args = {
     base_image_tag = "base-gpu-${BASE_IMAGE_TAG_SUFFIX}"
