@@ -9,8 +9,10 @@ The classes for the Custom Components must be defined in this file.
 
 
 from haystack.nodes.base import BaseComponent
-
-print("WARNING: This is a custom component that should not be loaded")
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.warning("WARNING: This is a custom component that should not be loaded")
 
 
 class SampleComponent(BaseComponent):
