@@ -3,9 +3,7 @@ services:
 
   haystack-api:
     build:
-      context: .
-      dockerfile: Dockerfile-GPU
-      # image: "deepset/haystack-gpu:latest"
+      image: "deepset/haystack:gpu-latest"
       # in recent docker-compose version you can enable GPU resources. Make sure to fulfill the prerequisites listed here: https://docs.docker.com/compose/gpu-support/
     deploy:
       resources:
@@ -16,14 +14,14 @@ services:
             capabilities: [gpu]
     # # Mount custom Pipeline YAML and custom Components.
     volumes:
-      - ~/ai/charlie/src/haystack/pipeline:/home/user/rest_api/pipeline
+      - ~/ai/charlie/src/haystack/pipeline:/home/user/rest_api/rest_api/pipeline
     ports:
       - 80:8000
     restart: on-failure
     environment:
       # See rest_api/pipeline/pipelines.haystack-pipeline.yml for configurations of Search & Indexing Pipeline.
       # - DOCUMENTSTORE_PARAMS_HOST=elasticsearch
-      - PIPELINE_YAML_PATH=/home/user/rest_api/pipeline/charlie-dev.haystack-pipeline-test.yml
+      - PIPELINE_YAML_PATH=/home/user/rest_api/rest_api/pipeline/charlie-dev.haystack-pipeline-test.yml
       - CONCURRENT_REQUEST_PER_WORKER=4
       - QUERY_PIPELINE_NAME=query
       - TOKENIZERS_PARALLELISM=false

@@ -52,7 +52,7 @@ target "base-cpu" {
 }
 
 target "base-gpu" {
-  dockerfile = "Dockerfile.base"
+  dockerfile = "docker/Dockerfile.base"
   tags = ["${IMAGE_NAME}:base-gpu-${IMAGE_TAG_SUFFIX}"]
   args = {
     build_image = "pytorch/pytorch:1.12.1-cuda11.3-cudnn8-runtime"
