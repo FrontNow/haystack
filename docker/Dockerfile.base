@@ -28,7 +28,7 @@ RUN curl -O https://dl.xpdfreader.com/xpdf-tools-linux-4.04.tar.gz && \
 # Copy Haystack code
 COPY haystack /opt/haystack/haystack
 # Copy package files & models
-COPY pyproject.toml VERSION.txt LICENSE README.md models* /opt/haystack/haystack/
+COPY pyproject.toml VERSION.txt LICENSE README.md models* /opt/haystack/
 # Copy REST API code
 COPY rest_api /opt/haystack/haystack/rest_api
 
