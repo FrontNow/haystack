@@ -11,9 +11,9 @@ services:
           - driver: nvidia
             count: 1
             capabilities: [gpu]
-    # # Mount custom Pipeline YAML and custom Components.
+    # Mount custom Pipeline YAML and custom Components.
     volumes:
-      - ~/ai/charlie/src/haystack/pipeline:/home/user/rest_api/rest_api/pipeline
+      - ~/ai/charlie/src/haystack/pipeline:/opt/haystack/rest_api/rest_api/pipeline
     ports:
       - 80:8000
     restart: on-failure
