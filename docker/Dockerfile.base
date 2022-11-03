@@ -25,11 +25,11 @@ RUN curl -O https://dl.xpdfreader.com/xpdf-tools-linux-4.04.tar.gz && \
 # RUN git clone --depth=1 --branch=${haystack_version} https://github.com/deepset-ai/haystack.git /opt/haystack
 
 #### CUSTOM ####
-# Copy Haystack code
+# Copy Haystack code (this copies the folder haystack into /opt/haystack/)
 COPY haystack /opt/haystack/haystack
 # Copy package files & models
 COPY pyproject.toml VERSION.txt LICENSE README.md models* /opt/haystack/
-# Copy REST API code
+# Copy REST API code (this copies the folder rest_api into /opt/haystack/)
 COPY rest_api /opt/haystack/rest_api
 
 
