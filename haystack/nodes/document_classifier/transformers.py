@@ -5,11 +5,11 @@ import itertools
 import torch
 from tqdm.auto import tqdm
 from transformers import pipeline
+import json
 
 from haystack.schema import Document
 from haystack.nodes.document_classifier.base import BaseDocumentClassifier
 from haystack.modeling.utils import initialize_device_settings
-import json
 
 
 logger = logging.getLogger(__name__)
@@ -183,26 +183,18 @@ class TransformersDocumentClassifier(BaseDocumentClassifier):
         predictions = []
         pb = tqdm(total=len(texts), disable=not self.progress_bar, desc="Classifying documents")
         for batch in batches:
+            batch_out = json.dumps(batch)
+            logger.warning(f"Processing batch {batch_out}")
             if self.task == "zero-shot-classification":
                 batched_prediction = self.model(batch, candidate_labels=self.labels, truncation=True)
             elif self.task == "text-classification":
+                logger.warning("text classification")
                 batched_prediction = self.model(batch, top_k=self.top_k, truncation=True)
+                pred_out = json.dumps(batched_prediction)
+                logger.warning(f"Batched prediction {pred_out}")
             predictions.extend(batched_prediction)
             pb.update(len(batch))
         pb.close()
-
-        info = json.dumps(predictions)
-        logger.warning(f"Finished classification of {info}.")
-        info2 = json.dumps(texts)
-        logger.warning(f"Finished texts of {info2}.")
-        logger.warning(f"Finished task of {self.task}.")
-        logger.warning(f"Finished batch of {batch_size}.")
-        logger.warning(f"Finished docs of {len(documents)}.")
-        for batch in batches:
-            info3 = json.dumps(batch)
-            logger.warning(f"Finished batch of {info3}.")
-            batched_prediction = self.model(batch, top_k=self.top_k, truncation=True)
-            logger.warning(f"Finished batched_prediction of {batched_prediction}.")
 
         for prediction, doc in zip(predictions, documents):
             if self.task == "zero-shot-classification":
@@ -252,12 +244,6 @@ class TransformersDocumentClassifier(BaseDocumentClassifier):
             return grouped_documents
 
     def get_batches(self, items, batch_size):
-        info2 = json.dumps(items)
-        logger.warning(f"Finished texts of {info2}.")
-        logger.warning(f"Finished task of {batch_size}.")
-        logger.warning(f"Finished length of {len(items)}.")
-        info3 = json.dumps(items[0 : 0 + batch_size])
-        logger.warning(f"Finished batch of {info3}.")
         if batch_size is None:
             yield items
             return
