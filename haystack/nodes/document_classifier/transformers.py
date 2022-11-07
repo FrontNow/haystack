@@ -9,6 +9,7 @@ from transformers import pipeline
 from haystack.schema import Document
 from haystack.nodes.document_classifier.base import BaseDocumentClassifier
 from haystack.modeling.utils import initialize_device_settings
+import json
 
 
 logger = logging.getLogger(__name__)
