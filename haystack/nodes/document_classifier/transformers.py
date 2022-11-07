@@ -178,6 +178,8 @@ class TransformersDocumentClassifier(BaseDocumentClassifier):
             for doc in documents
         ]
         batches = self.get_batches(texts, batch_size=batch_size)
+        for batch in batches:
+            logger.warning(f"Processing batch")
         predictions = []
         pb = tqdm(total=len(texts), disable=not self.progress_bar, desc="Classifying documents")
         for batch in batches:
@@ -250,6 +252,12 @@ class TransformersDocumentClassifier(BaseDocumentClassifier):
             return grouped_documents
 
     def get_batches(self, items, batch_size):
+        info2 = json.dumps(texts)
+        logger.warning(f"Finished texts of {info2}.")
+        logger.warning(f"Finished task of {batch_size}.")
+        logger.warning(f"Finished length of {len(items)}.")
+        info3 = json.dumps(items[0 : 0 + batch_size])
+        logger.warning(f"Finished batch of {info3}.")
         if batch_size is None:
             yield items
             return
