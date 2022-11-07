@@ -189,7 +189,7 @@ class TransformersDocumentClassifier(BaseDocumentClassifier):
             pb.update(len(batch))
         pb.close()
 
-        info = json.dumps(prediction)
+        info = json.dumps(predictions)
         logger.warning(f"Finished classification of {info}.")
 
         for prediction, doc in zip(predictions, documents):
