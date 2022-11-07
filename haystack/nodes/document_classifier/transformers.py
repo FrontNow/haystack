@@ -179,12 +179,13 @@ class TransformersDocumentClassifier(BaseDocumentClassifier):
         ]
         batches = self.get_batches(texts, batch_size=batch_size)
         for batch in batches:
-            logger.warning(f"Processing batch")
+            batch_out = json.dumps(batch)
+            logger.warning(f"Processing before batch {batch_out}")
         predictions = []
         pb = tqdm(total=len(texts), disable=not self.progress_bar, desc="Classifying documents")
         for batch in batches:
             batch_out = json.dumps(batch)
-            logger.warning(f"Processing batch {batch_out}")
+            logger.warning(f"Processing after batch {batch_out}")
             if self.task == "zero-shot-classification":
                 batched_prediction = self.model(batch, candidate_labels=self.labels, truncation=True)
             elif self.task == "text-classification":
