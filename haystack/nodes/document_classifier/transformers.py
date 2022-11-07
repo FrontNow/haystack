@@ -191,6 +191,13 @@ class TransformersDocumentClassifier(BaseDocumentClassifier):
 
         info = json.dumps(predictions)
         logger.warning(f"Finished classification of {info}.")
+        info2 = json.dumps(texts)
+        logger.warning(f"Finished texts of {info2}.")
+        logger.warning(f"Finished task of {self.task}.")
+        logger.warning(f"Finished batch of {batch_size}.")
+        logger.warning(f"Finished docs of {len(documents)}.")
+        info3 = json.dumps(batches)
+        logger.warning(f"Finished batches of {info3}.")
 
         for prediction, doc in zip(predictions, documents):
             if self.task == "zero-shot-classification":
