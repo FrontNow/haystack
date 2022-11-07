@@ -196,8 +196,11 @@ class TransformersDocumentClassifier(BaseDocumentClassifier):
         logger.warning(f"Finished task of {self.task}.")
         logger.warning(f"Finished batch of {batch_size}.")
         logger.warning(f"Finished docs of {len(documents)}.")
-        info3 = json.dumps(batches)
-        logger.warning(f"Finished batches of {info3}.")
+        for batch in batches:
+            info3 = json.dumps(batch)
+            logger.warning(f"Finished batch of {info3}.")
+            batched_prediction = self.model(batch, top_k=self.top_k, truncation=True)
+            logger.warning(f"Finished batched_prediction of {batched_prediction}.")
 
         for prediction, doc in zip(predictions, documents):
             if self.task == "zero-shot-classification":
