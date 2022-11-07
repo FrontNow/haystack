@@ -252,7 +252,7 @@ class TransformersDocumentClassifier(BaseDocumentClassifier):
             return grouped_documents
 
     def get_batches(self, items, batch_size):
-        info2 = json.dumps(texts)
+        info2 = json.dumps(items)
         logger.warning(f"Finished texts of {info2}.")
         logger.warning(f"Finished task of {batch_size}.")
         logger.warning(f"Finished length of {len(items)}.")
