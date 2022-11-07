@@ -39,7 +39,7 @@ group "all" {
 }
 
 target "base-cpu" {
-  dockerfile = "Dockerfile.base"
+  dockerfile = "docker/Dockerfile.base"
   tags = ["${IMAGE_NAME}:base-cpu-${IMAGE_TAG_SUFFIX}"]
   args = {
     build_image = "python:3.10-slim"
@@ -65,7 +65,7 @@ target "base-gpu" {
 }
 
 target "cpu" {
-  dockerfile = "Dockerfile.api"
+  dockerfile = "docker/Dockerfile.api"
   tags = ["${IMAGE_NAME}:cpu-${IMAGE_TAG_SUFFIX}"]
   args = {
     base_image_tag = "base-cpu-${BASE_IMAGE_TAG_SUFFIX}"

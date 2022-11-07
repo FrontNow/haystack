@@ -1,3 +1,10 @@
+#
+# DEPRECATION NOTICE
+#
+# This Dockerfile and the relative image deepset/haystack:cpu
+# have been deprecated in 1.9.0 in favor of:
+# https://github.com/deepset-ai/haystack/tree/main/docker
+#
 FROM --platform=linux/amd64 python:3.7.4-stretch
 # I added platform as suggested here: https://stackoverflow.com/questions/65612411/forcing-docker-to-use-linux-amd64-platform-by-default-on-macos/69636473#69636473
 # I had the following error: scram authentication requires libpq version 10 or above
