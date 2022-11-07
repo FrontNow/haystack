@@ -5,7 +5,6 @@ import itertools
 import torch
 from tqdm.auto import tqdm
 from transformers import pipeline
-import json
 
 from haystack.schema import Document
 from haystack.nodes.document_classifier.base import BaseDocumentClassifier
@@ -178,21 +177,13 @@ class TransformersDocumentClassifier(BaseDocumentClassifier):
             for doc in documents
         ]
         batches = self.get_batches(texts, batch_size=batch_size)
-        for batch in batches:
-            batch_out = json.dumps(batch)
-            logger.warning(f"Processing before batch {batch_out}")
         predictions = []
         pb = tqdm(total=len(texts), disable=not self.progress_bar, desc="Classifying documents")
         for batch in batches:
-            batch_out = json.dumps(batch)
-            logger.warning(f"Processing after batch {batch_out}")
             if self.task == "zero-shot-classification":
                 batched_prediction = self.model(batch, candidate_labels=self.labels, truncation=True)
             elif self.task == "text-classification":
-                logger.warning("text classification")
                 batched_prediction = self.model(batch, top_k=self.top_k, truncation=True)
-                pred_out = json.dumps(batched_prediction)
-                logger.warning(f"Batched prediction {pred_out}")
             predictions.extend(batched_prediction)
             pb.update(len(batch))
         pb.close()
