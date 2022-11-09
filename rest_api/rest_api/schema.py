@@ -35,7 +35,8 @@ class QueryRequest(RequestBaseModel):
 
 
 class FilterRequest(RequestBaseModel):
-    filters: Optional[Dict[str, Union[PrimitiveType, List[PrimitiveType], Dict[str, PrimitiveType]]]] = None
+    filters: Optional[Dict[str, Union[PrimitiveType, List[PrimitiveType], Dict[str, PrimitiveType]]]] = None,
+    document_store_index: Optional[str] = None
 
 
 class CreateLabelSerialized(RequestBaseModel):
