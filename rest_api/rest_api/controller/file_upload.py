@@ -37,14 +37,8 @@ class PreprocessorParams(BaseModel):
     split_respect_sentence_boundary: Optional[bool] = None
 
 @as_form
-class TranslatorDecisionParams(BaseModel):
-    default_output: Optional[int] = None
-
-@as_form
-class RetrieverDecisionParams(BaseModel):
-    default_output: Optional[int] = None
-
-
+class Params(BaseModel):
+    params: Optional[Dict] = None
 
 class Response(BaseModel):
     file_id: str
@@ -60,8 +54,7 @@ def upload_file(
     meta: Optional[str] = Form("null"),  # type: ignore
     fileconverter_params: FileConverterParams = Depends(FileConverterParams.as_form),  # type: ignore
     preprocessor_params: PreprocessorParams = Depends(PreprocessorParams.as_form),  # type: ignore
-    translator_decision_params: TranslatorDecisionParams = Depends(TranslatorDecisionParams.as_form),  # type: ignore
-    retriever_decision_params: RetrieverDecisionParams = Depends(RetrieverDecisionParams.as_form),  # type: ignore
+    remaining_params: Params = Depends(Params.as_form),  # type: ignore
     debug: Optional[bool] = None, # type: ignore
 ):
     """
@@ -100,7 +93,8 @@ def upload_file(
     for preprocessor in preprocessors:
         params[preprocessor.name] = preprocessor_params.dict()
 
-    params["TranslatorDecision"] = translator_decision_params.dict()
-    params["RetrieverDecision"] = retriever_decision_params.dict()
+    remaining_params = remaining_params.dict()
+    if "params" in remaining_params:
+        params.update(remaining_params["params"])
 
     return indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params, debug=debug)
