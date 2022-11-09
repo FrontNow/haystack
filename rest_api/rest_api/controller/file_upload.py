@@ -36,10 +36,6 @@ class PreprocessorParams(BaseModel):
     split_overlap: Optional[int] = None
     split_respect_sentence_boundary: Optional[bool] = None
 
-@as_form
-class Params(BaseModel):
-    params: Optional[Dict] = None
-
 class Response(BaseModel):
     file_id: str
 
@@ -54,7 +50,7 @@ def upload_file(
     meta: Optional[str] = Form("null"),  # type: ignore
     fileconverter_params: FileConverterParams = Depends(FileConverterParams.as_form),  # type: ignore
     preprocessor_params: PreprocessorParams = Depends(PreprocessorParams.as_form),  # type: ignore
-    remaining_params: Params = Depends(Params.as_form),  # type: ignore
+    remaining_params: Optional[str] = Form("null"),  # type: ignore
     debug: Optional[bool] = None, # type: ignore
 ):
     """
@@ -70,6 +66,9 @@ def upload_file(
     meta_form = json.loads(meta) or {}  # type: ignore
     if not isinstance(meta_form, dict):
         raise HTTPException(status_code=500, detail=f"The meta field must be a dict or None, not {type(meta_form)}")
+    params_form = json.loads(remaining_params) or {}  # type: ignore
+    if not isinstance(params_form, dict):
+        raise HTTPException(status_code=500, detail=f"The params field must be a dict or None, not {type(meta_form)}")
 
     for file in files:
         try:
@@ -93,8 +92,6 @@ def upload_file(
     for preprocessor in preprocessors:
         params[preprocessor.name] = preprocessor_params.dict()
 
-    remaining_params = remaining_params.dict()
-    if "params" in remaining_params:
-        params.update(remaining_params["params"])
+    params.update(params_form)
 
     return indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params, debug=debug)
