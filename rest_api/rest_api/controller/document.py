@@ -44,7 +44,7 @@ def get_documents(filters: FilterRequest):
 
 
 @router.post("/documents/delete_by_filters", response_model=bool)
-def delete_documents(filters: FilterRequest):
+def delete_documents(filters: FilterRequest, document_store_name: Optional[str] = None):
     """
     This endpoint allows you to delete documents contained in your document store.
     You can filter the documents to delete by metadata (like the document's name),
@@ -57,6 +57,8 @@ def delete_documents(filters: FilterRequest):
     `'{"filters": {}}'`
     """
     for doc_store in document_stores:
+        if document_store_name is not None and doc_store.name != document_store_name:
+            continue
         doc_store.delete_documents(filters=filters.filters)
         logger.warning(f"Deleted store {doc_store.index}")
     return True
