@@ -93,6 +93,8 @@ def upload_file(
     for preprocessor in preprocessors:
         params[preprocessor.name] = preprocessor_params.dict()
 
-    params.update(remaining_params.dict())
+    remaining_params = remaining_params.dict()
+    if "params" in remaining_params:
+        params.update(remaining_params["params"])
 
     return indexing_pipeline.run(file_paths=file_paths, meta=file_metas, params=params, debug=debug)
