@@ -57,7 +57,7 @@ def delete_documents(filters: FilterRequest):
     `'{"filters": {}}'`
     """
     for doc_store in document_stores:
-        if document_store_index is not None and doc_store.index != document_store_index:
+        if filters.document_store_index is not None and doc_store.index != filters.document_store_index:
             continue
         doc_store.delete_documents(filters=filters.filters)
         logger.warning(f"Deleted store {doc_store.index}")
